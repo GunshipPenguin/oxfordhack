@@ -71,7 +71,8 @@ function init() {
     scene.add(room);
 
     blockchainApi.subscribeToTransactions(t => {
-        
+        transaction = JSON.parse(e.data).x
+        transactions.push(transaction.tx_index)
         room.addUnconfirmedTransaction(t);
     });
 
@@ -86,7 +87,7 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.vr.enabled = true;
     container.appendChild(renderer.domElement);
-
+f
     window.addEventListener('resize', onWindowResize, false);
 
     window.addEventListener('vrdisplaypointerrestricted', onPointerRestricted, false);
@@ -358,8 +359,6 @@ function render() {
     renderer.render(scene, camera);
 }
 
-//-------------------------------
-
 function buildBlock(transactionIDs)
 {
 	for (var i = 0; i < transactionIDs.length; i++)
@@ -385,36 +384,7 @@ function moveBox(box)
 {
 	
 }
-
-//-------------------------------
-
-var transactionConnection = new WebSocket('wss://ws.blockchain.info/inv');
-var transactionData = {"op":"unconfirmed_sub"};
-var blockConnection = new WebSocket('wss://ws.blockchain.info/inv');
-var blockData = {"op":"blocks_sub"};
-var transactions = [];
-transactionConnection.onopen = function()
-{
-	transactionConnection.send(JSON.stringify(transactionData)) 
-};
-transactionConnection.onerror = function (error)
-{
-	console.log('WebSocket Error' + error)
-};
-transactionConnection.onmessage = function(e)
-{
-	transaction = JSON.parse(e.data).x
-	transactions.push(transaction.tx_index)
-};
-blockConnection.onopen = function()
-{
-	blockConnection.send(JSON.stringify(blockData)) 
-};
-blockConnection.onerror = function (error)
-{
-	console.log('WebSocket Error' + error)
-};
-blockConnection.onmessage = function(e)
+function removeBlock()
 {
 	block = JSON.parse(e.data).x
 	for (var i=0; i<block.txIndexes.length; ++i)
@@ -425,6 +395,8 @@ blockConnection.onmessage = function(e)
 		}
 	}
 	buildBlock(transactions)
-};
+}
+
+blockchainApi.subscribeToBlocks(removeBlock())
 
 
