@@ -1,0 +1,17 @@
+{
+  "name": "oxfordhack",
+  "version": "1.0.0",
+  "description": "OxrfordHack project",
+  "main": "main.js",
+  "scripts": {
+    "build-dev": "browserify js/main.js > public_html/bundle.js || exit 0",
+    "build-release": "browserify js/main.js | uglifyjs > public_html/bundle.js || exit 0"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "browserify": "^16.2.3",
+    "three": "^0.98.0",
+    "uglify": "^0.1.5"
+  }
+}
