@@ -1,5 +1,7 @@
 var THREE = require('three');
 
+BTC_TO_GBP = 0.00034;
+
 class UnconfirmedTransactionMesh extends THREE.Mesh {
     constructor(txInfo) {
         super(new THREE.BoxBufferGeometry(0.1, 0.1, 0.1),
@@ -19,6 +21,10 @@ class UnconfirmedTransactionMesh extends THREE.Mesh {
         });
 
         return smallest;
+    }
+
+    getEstimatedAmountGBP() {
+        return this.getEstimatedAmount() * BTC_TO_GBP;
     }
 }
 

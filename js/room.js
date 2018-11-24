@@ -26,7 +26,6 @@ class Room extends THREE.LineSegments {
         newTx.scale.x = Math.min((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
         newTx.scale.y = Math.min((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
         newTx.scale.z = Math.min((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
-        console.log(newTx.scale);
 
         newTx.userData.velocity = new THREE.Vector3();
         newTx.userData.velocity.x = Math.random() * 0.01 - 0.005;

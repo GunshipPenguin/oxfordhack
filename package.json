@@ -11,7 +11,11 @@
   "license": "ISC",
   "dependencies": {
     "browserify": "^16.2.3",
+    "moment": "^2.22.2",
+    "statsvr": "^1.2.6",
     "three": "^0.98.0",
+    "three-text2d": "^0.4.1",
+    "three.textsprite": "^18.10.24",
     "uglify": "^0.1.5"
   }
 }
