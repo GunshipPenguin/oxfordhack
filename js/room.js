@@ -2,8 +2,8 @@ var THREE = require('three');
 var BoxLineGeometry = require('./box-line-geometry.js');
 var UnconfirmedTransactionMesh = require('./unconfirmed-transaction-mesh');
 
-BTC_SCALE = 0.024;
-SCALE_CAP = 2.0;
+BTC_SCALE = 0.1;
+SCALE_CAP = 3.0;
 
 class Room extends THREE.LineSegments {
     constructor(roomSize) {
@@ -23,9 +23,9 @@ class Room extends THREE.LineSegments {
         newTx.rotation.z = Math.random() * 2 * Math.PI;
 
         var estAmount = newTx.getEstimatedAmount() * 10e-8; // Estimated amount in BTC
-        newTx.scale.x = 0.5 // Math.max((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
-        newTx.scale.y = 0.5 // Math.max((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
-        newTx.scale.z = 0.5 //Math.max((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
+        newTx.scale.x = Math.min((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
+        newTx.scale.y = Math.min((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
+        newTx.scale.z = Math.min((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
         console.log(newTx.scale);
 
         newTx.userData.velocity = new THREE.Vector3();
