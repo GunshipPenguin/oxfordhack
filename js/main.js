@@ -5,6 +5,7 @@ var blockchainApi = require('./blockchain-api');
 
 var container;
 var camera, scene, renderer;
+var clock;
 
 var room;
 var crosshair;
@@ -13,6 +14,7 @@ init();
 animate();
 
 function init() {
+    clock = new THREE.Clock();
     container = document.createElement('div');
     document.body.appendChild(container);
 
@@ -41,12 +43,15 @@ function init() {
     crosshair.position.z = -2;
     camera.add(crosshair);
 
-    room = new Room();
+    room = new Room(4);
 
     room.position.y = 3;
     scene.add(room);
 
-    blockchainApi.subscribeToTransactions(t => room.addUnconfirmedTransaction());
+    blockchainApi.subscribeToTransactions(t => {
+        console.log(t);
+        room.addUnconfirmedTransaction(t);
+    });
 
     scene.add(new THREE.HemisphereLight(0x606060, 0x404040));
 
@@ -95,6 +100,9 @@ function animate() {
 }
 
 function render() {
+    var delta = clock.getDelta() * 60;
+
+    room.moveUnconfirmedTransactions(delta);
     renderer.render(scene, camera);
 }
 
