@@ -71,8 +71,12 @@ function init() {
     scene.add(room);
 
     blockchainApi.subscribeToTransactions(t => {
+<<<<<<< HEAD
         transaction = JSON.parse(e.data).x
         transactions.push(transaction.tx_index)
+=======
+
+>>>>>>> 360a3c184aea7b72b3d0b96fb207f3da9eb6c93e
         room.addUnconfirmedTransaction(t);
     });
 
@@ -363,28 +367,71 @@ function buildBlock(transactionIDs)
 {
 	for (var i = 0; i < transactionIDs.length; i++)
 	{
-		var box = findBox(transactionsIDs[i])
-		moveBox(box)
+		findBox(transactionsIDs[i])
+      .then(moveBox(box))
+      .catch(console.error)
 	}
+
+  room.addConfirmedTransaction();
 }
 
 function findBox(boxID){
 	var boxes = room.children
 
-	for (var i = 0; i < boxes.length; ++i)
-	{
-		if (boxes[i].txInfo.x.tx_index == boxID)
-		{
-			 return boxes[i]
-		}
-	}
+  const promise = new Promise ((resolve, reject) => {
+    for (var i = 0; i < boxes.length; ++i)
+    {
+      if (boxes[i].txInfo.x.tx_index == boxID)
+      {
+         resolve(boxes[i])
+      }
+    }
+
+    reject('box not found')
+  });
+
+  return promise
 }
 
 function moveBox(box)
 {
-	
+	room.remove(box) //change to having box move across room
+
 }
+<<<<<<< HEAD
 function removeBlock()
+=======
+
+//-------------------------------
+
+var transactionConnection = new WebSocket('wss://ws.blockchain.info/inv');
+var transactionData = {"op":"unconfirmed_sub"};
+var blockConnection = new WebSocket('wss://ws.blockchain.info/inv');
+var blockData = {"op":"blocks_sub"};
+var transactions = [];
+transactionConnection.onopen = function()
+{
+	transactionConnection.send(JSON.stringify(transactionData))
+};
+transactionConnection.onerror = function (error)
+{
+	console.log('WebSocket Error' + error)
+};
+transactionConnection.onmessage = function(e)
+{
+	transaction = JSON.parse(e.data).x
+	transactions.push(transaction.tx_index)
+};
+blockConnection.onopen = function()
+{
+	blockConnection.send(JSON.stringify(blockData))
+};
+blockConnection.onerror = function (error)
+{
+	console.log('WebSocket Error' + error)
+};
+blockConnection.onmessage = function(e)
+>>>>>>> 360a3c184aea7b72b3d0b96fb207f3da9eb6c93e
 {
 	block = JSON.parse(e.data).x
 	for (var i=0; i<block.txIndexes.length; ++i)
@@ -395,8 +442,12 @@ function removeBlock()
 		}
 	}
 	buildBlock(transactions)
+<<<<<<< HEAD
 }
 
 blockchainApi.subscribeToBlocks(removeBlock())
 
 
+=======
+};
+>>>>>>> 360a3c184aea7b72b3d0b96fb207f3da9eb6c93e
