@@ -3,7 +3,7 @@ var WEBVR = require('./web-vr');
 var Room = require('./room');
 
 var container;
-var camera, scene, raycaster, renderer;
+var camera, scene, renderer;
 
 var room;
 var crosshair;
