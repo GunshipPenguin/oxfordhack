@@ -1,6 +1,7 @@
 var THREE = require('three');
 var WEBVR = require('./web-vr');
 var Room = require('./room');
+var blockchainApi = require('./blockchain-api');
 
 var container;
 var camera, scene, renderer;
@@ -44,6 +45,8 @@ function init() {
 
     room.position.y = 3;
     scene.add(room);
+
+    blockchainApi.subscribeToTransactions(t => room.addUnconfirmedTransaction());
 
     scene.add(new THREE.HemisphereLight(0x606060, 0x404040));
 
