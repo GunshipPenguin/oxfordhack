@@ -71,7 +71,7 @@ function init() {
     scene.add(room);
 
     blockchainApi.subscribeToTransactions(t => {
-        
+
         room.addUnconfirmedTransaction(t);
     });
 
@@ -364,26 +364,36 @@ function buildBlock(transactionIDs)
 {
 	for (var i = 0; i < transactionIDs.length; i++)
 	{
-		var box = findBox(transactionsIDs[i])
-		moveBox(box)
+		findBox(transactionsIDs[i])
+      .then(moveBox(box))
+      .catch(console.error)
 	}
+
+  room.addConfirmedTransaction();
 }
 
 function findBox(boxID){
 	var boxes = room.children
 
-	for (var i = 0; i < boxes.length; ++i)
-	{
-		if (boxes[i].txInfo.x.tx_index == boxID)
-		{
-			 return boxes[i]
-		}
-	}
+  const promise = new Promise ((resolve, reject) => {
+    for (var i = 0; i < boxes.length; ++i)
+    {
+      if (boxes[i].txInfo.x.tx_index == boxID)
+      {
+         resolve(boxes[i])
+      }
+    }
+
+    reject('box not found')
+  });
+
+  return promise
 }
 
 function moveBox(box)
 {
-	
+	room.remove(box) //change to having box move across room
+
 }
 
 //-------------------------------
@@ -395,7 +405,7 @@ var blockData = {"op":"blocks_sub"};
 var transactions = [];
 transactionConnection.onopen = function()
 {
-	transactionConnection.send(JSON.stringify(transactionData)) 
+	transactionConnection.send(JSON.stringify(transactionData))
 };
 transactionConnection.onerror = function (error)
 {
@@ -408,7 +418,7 @@ transactionConnection.onmessage = function(e)
 };
 blockConnection.onopen = function()
 {
-	blockConnection.send(JSON.stringify(blockData)) 
+	blockConnection.send(JSON.stringify(blockData))
 };
 blockConnection.onerror = function (error)
 {
@@ -426,5 +436,3 @@ blockConnection.onmessage = function(e)
 	}
 	buildBlock(transactions)
 };
-
-
