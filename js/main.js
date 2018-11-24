@@ -1,6 +1,8 @@
 var THREE = require('three');
 var WEBVR = require('./web-vr');
 var Room = require('./room');
+var WEBVR = require('./web-vr');
+var Room = require('./room');
 var blockchainApi = require('./blockchain-api');
 
 var container;
@@ -19,6 +21,27 @@ function init() {
     document.body.appendChild(container);
 
     var info = document.createElement('div');
+var WEBVR = require('./web-vr');
+var Room = require('./room');
+var blockchainApi = require('./blockchain-api');
+
+var container;
+var camera, scene, renderer;
+var clock;
+
+var room;
+var crosshair;
+
+function onPointerRestricted() {
+    var pointerLockElement = renderer.domElement;
+    if (pointerLockElement && typeof (pointerLockElement.requestPointerLock) === 'function') {
+        pointerLockElement.requestPointerLock();
+    }
+}
+
+function onPointerUnrestricted() {
+    var currentPointerLockElement = document.pointerLockElement;
+    var expectedPointerLockElement = renderer.domElement
     info.style.position = 'absolute';
     info.style.top = '10px';
     info.style.width = '100%';
@@ -73,35 +96,82 @@ function init() {
     document.body.appendChild(WEBVR.createButton(renderer));
 }
 
-function onPointerRestricted() {
-    var pointerLockElement = renderer.domElement;
-    if (pointerLockElement && typeof (pointerLockElement.requestPointerLock) === 'function') {
-        pointerLockElement.requestPointerLock();
-    }
-}
 
-function onPointerUnrestricted() {
-    var currentPointerLockElement = document.pointerLockElement;
-    var expectedPointerLockElement = renderer.domElement;
-    if (currentPointerLockElement && currentPointerLockElement === expectedPointerLockElement && typeof (document.exitPointerLock) === 'function') {
-        document.exitPointerLock();
-    }
-}
+var transactionConnection = new WebSocket('wss://ws.blockchain.info/inv');
+var transactionData = {"op":"unconfirmed_sub"};
+var blockConnection = new WebSocket('wss://ws.blockchain.info/inv');
+var blockData = {"op":"blocks_sub"};
+var transactions = [];
+transactionConnection.onopen = function()
+{
+	transactionConnection.send(JSON.stringify(transactionData))
+};
+transactionConnection.onerror = function (error)
+{
+	console.log('WebSocket Error' + error)
+};
+transactionConnection.onmessage = function(e)
+{
+	transaction = JSON.parse(e.data).x
+	transactions.push(transaction.tx_index)
+};
+blockConnection.onopen = function()
+{
+	blockConnection.send(JSON.stringify(blockData))
+};
+blockConnection.onerror = function (error)
+{
+	console.log('WebSocket Error' + error)
+};
+blockConnection.onmessage = function(e)
+{
+	block = JSON.parse(e.data).x
+	for (var i=0; i<block.txIndexes.length; ++i)
+	{
+		if (transactions[i] in block.txIndexes)
+		{
+			transactions.pop(transactions[i])
+		}
+	}
+	buildBlock(transactions)
+}};
 
-function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+//-------------------------------
 
-    renderer.setSize(window.innerWidth, window.innerHeight);
-}
+// function buildBlock(transactionIDs)
+// {
+// 	for (var i = 0; i < transactionIDs.length; i++)
+// 	{
+// 		findBox(transactionsIDs[i])
+//       .then(moveBox(box))
+//       .catch(console.error)
+// 	}
+//
+//   room.addConfirmedTransaction();
+// }
+//
+// function findBox(boxID){
+// 	var boxes = room.children
+//
+//   const promise = new Promise ((resolve, reject) => {
+//     for (var i = 0; i < boxes.length; ++i)
+//     {
+//       if (boxes[i].txInfo.x.tx_index == boxID)
+//       {
+//          resolve(boxes[i])
+//       }
+//     }
+//
+//     reject('box not found')
+//   });
+//
+//   return promise
+// }
+//
+// function moveBox(box)
+// {
+// 	room.remove(box) //change to having box move across room
+//
+// }
 
-function animate() {
-    renderer.setAnimationLoop(render);
-}
-
-function render() {
-    var delta = clock.getDelta() * 60;
-
-    room.moveUnconfirmedTransactions(delta);
-    renderer.render(scene, camera);
-}
+//-------------------------------

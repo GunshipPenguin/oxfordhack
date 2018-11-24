@@ -5,10 +5,26 @@ var UnconfirmedTransactionMesh = require('./unconfirmed-transaction-mesh');
 BTC_SCALE = 0.024;
 SCALE_CAP = 2.0;
 
+const chainX = 0
+const chainY = 0
+const blockSize = 50
+
 class Room extends THREE.LineSegments {
     constructor(roomSize) {
         super(new BoxLineGeometry(roomSize*2, roomSize*2, roomSize*2, 10, 10, 10), new THREE.LineBasicMaterial({color: 0x808080}));
         this.roomSize = roomSize;
+
+        this.chainZ = blockSize/2
+    }
+
+    addConfirmedTransaction(){
+      var newBlock = new ConfirmedTransaction(blockSize)
+
+      newBlock.position.x = chainX
+      newBlock.position.y = chainY
+      newBlock.position.z = chainZ
+
+      chainZ += blockSize
     }
 
     addUnconfirmedTransaction(txInfo) {
