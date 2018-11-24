@@ -59,10 +59,9 @@ function init() {
 	light.position.set( 1, 1, 1 ).normalize();
 	scene.add( light );
 
-	var geometry = new THREE.BoxBufferGeometry( 0.15, 0.15, 0.15 );
+	var geometry = new THREE.BoxBufferGeometry( 0.20, 0.15, 0.15 );
 
 	for ( var i = 0; i < 200; i ++ ) {
-
 		var object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
 
 		object.position.x = Math.random() * 4 - 2;
@@ -82,8 +81,7 @@ function init() {
 		object.userData.velocity.y = Math.random() * 0.01 - 0.005;
 		object.userData.velocity.z = Math.random() * 0.01 - 0.005;
 
-		room.add( object );
-
+		room.add(object);
 	}
 
 	raycaster = new THREE.Raycaster();
@@ -101,72 +99,51 @@ function init() {
 
 	window.addEventListener( 'resize', onWindowResize, false );
 
-	//
-
 	window.addEventListener( 'vrdisplaypointerrestricted', onPointerRestricted, false );
 	window.addEventListener( 'vrdisplaypointerunrestricted', onPointerUnrestricted, false );
 
 	document.body.appendChild( WEBVR.createButton( renderer ) );
-
 }
 
 function onMouseDown() {
-
 	isMouseDown = true;
-
 }
 
 function onMouseUp() {
-
 	isMouseDown = false;
-
 }
 
 function onPointerRestricted() {
-
 	var pointerLockElement = renderer.domElement;
 	if ( pointerLockElement && typeof ( pointerLockElement.requestPointerLock ) === 'function' ) {
-
 		pointerLockElement.requestPointerLock();
-
 	}
-
 }
 
 function onPointerUnrestricted() {
-
 	var currentPointerLockElement = document.pointerLockElement;
 	var expectedPointerLockElement = renderer.domElement;
 	if ( currentPointerLockElement && currentPointerLockElement === expectedPointerLockElement && typeof ( document.exitPointerLock ) === 'function' ) {
-
 		document.exitPointerLock();
-
 	}
-
 }
 
 function onWindowResize() {
-
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
 
 	renderer.setSize( window.innerWidth, window.innerHeight );
-
 }
 
 
 function animate() {
-
 	renderer.setAnimationLoop( render );
-
 }
 
 function render() {
-
 	var delta = clock.getDelta() * 60;
 
 	if ( isMouseDown === true ) {
-
 		var cube = room.children[ 0 ];
 		room.remove( cube );
 
@@ -177,72 +154,49 @@ function render() {
 		cube.userData.velocity.z = ( Math.random() * 0.01 - 0.05 ) * delta;
 		cube.userData.velocity.applyQuaternion( camera.quaternion );
 		room.add( cube );
-
 	}
-
-	// find intersections
 
 	raycaster.setFromCamera( { x: 0, y: 0 }, camera );
 
 	var intersects = raycaster.intersectObjects( room.children );
 
 	if ( intersects.length > 0 ) {
-
 		if ( INTERSECTED != intersects[ 0 ].object ) {
-
 			if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
-
-			INTERSECTED = intersects[ 0 ].object;
-			INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-			INTERSECTED.material.emissive.setHex( 0xff0000 );
-
+				INTERSECTED = intersects[ 0 ].object;
+				INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+				INTERSECTED.material.emissive.setHex( 0xff0000 );
 		}
-
 	} else {
-
 		if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
-
 		INTERSECTED = undefined;
-
 	}
 
 	// Keep cubes inside room
-
 	for ( var i = 0; i < room.children.length; i ++ ) {
-
 		var cube = room.children[ i ];
 
 		cube.userData.velocity.multiplyScalar( 1 - ( 0.001 * delta ) );
-
 		cube.position.add( cube.userData.velocity );
-
 		if ( cube.position.x < - 3 || cube.position.x > 3 ) {
-
 			cube.position.x = THREE.Math.clamp( cube.position.x, - 3, 3 );
 			cube.userData.velocity.x = - cube.userData.velocity.x;
-
 		}
 
 		if ( cube.position.y < - 3 || cube.position.y > 3 ) {
-
 			cube.position.y = THREE.Math.clamp( cube.position.y, - 3, 3 );
 			cube.userData.velocity.y = - cube.userData.velocity.y;
-
 		}
 
 		if ( cube.position.z < - 3 || cube.position.z > 3 ) {
-
 			cube.position.z = THREE.Math.clamp( cube.position.z, - 3, 3 );
 			cube.userData.velocity.z = - cube.userData.velocity.z;
-
 		}
 
 		cube.rotation.x += cube.userData.velocity.x * 2 * delta;
 		cube.rotation.y += cube.userData.velocity.y * 2 * delta;
 		cube.rotation.z += cube.userData.velocity.z * 2 * delta;
-
 	}
 
 	renderer.render( scene, camera );
-
 }

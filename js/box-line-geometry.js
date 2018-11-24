@@ -1,5 +1,4 @@
 BoxLineGeometry = function ( width, height, depth, widthSegments, heightSegments, depthSegments ) {
-
 	THREE.BufferGeometry.call( this );
 
 	width = width || 1;
@@ -23,40 +22,33 @@ BoxLineGeometry = function ( width, height, depth, widthSegments, heightSegments
 	var x = - widthHalf, y = - heightHalf, z = - depthHalf;
 
 	for ( var i = 0; i <= widthSegments; i ++ ) {
-
 		vertices.push( x, - heightHalf, - depthHalf, x,   heightHalf, - depthHalf );
 		vertices.push( x,   heightHalf, - depthHalf, x,   heightHalf,   depthHalf );
 		vertices.push( x,   heightHalf,   depthHalf, x, - heightHalf,   depthHalf );
 		vertices.push( x, - heightHalf,   depthHalf, x, - heightHalf, - depthHalf );
 
 		x += segmentWidth;
-
 	}
 
 	for ( var i = 0; i <= heightSegments; i ++ ) {
-
 		vertices.push( - widthHalf, y, - depthHalf,   widthHalf, y, - depthHalf );
 		vertices.push(   widthHalf, y, - depthHalf,   widthHalf, y,   depthHalf );
 		vertices.push(   widthHalf, y,   depthHalf, - widthHalf, y,   depthHalf );
 		vertices.push( - widthHalf, y,   depthHalf, - widthHalf, y, - depthHalf );
 
 		y += segmentHeight;
-
 	}
 
 	for ( var i = 0; i <= depthSegments; i ++ ) {
-
 		vertices.push( - widthHalf, - heightHalf, z, - widthHalf,   heightHalf, z );
 		vertices.push( - widthHalf,   heightHalf, z,   widthHalf,   heightHalf, z );
 		vertices.push(   widthHalf,   heightHalf, z,   widthHalf, - heightHalf, z );
 		vertices.push(   widthHalf, - heightHalf, z, - widthHalf, - heightHalf, z );
 
 		z += segmentDepth;
-
 	}
 
 	this.addAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
-
 }
 
 BoxLineGeometry.prototype = Object.create( THREE.BufferGeometry.prototype );
