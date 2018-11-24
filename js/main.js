@@ -1,5 +1,5 @@
 var THREE = require('three');
-var WEBVR = require('./WebVR');
+var WEBVR = require('./web-vr');
 var Room = require('./room');
 
 var container;
@@ -50,8 +50,6 @@ function init() {
     var light = new THREE.DirectionalLight(0xffffff);
     light.position.set(1, 1, 1).normalize();
     scene.add(light);
-
-    raycaster = new THREE.Raycaster();
 
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setPixelRatio(window.devicePixelRatio);
