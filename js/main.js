@@ -143,7 +143,7 @@ function moveBox(box)
 
 }
 
-function removeBlock()
+function removeSphere(e)
 {
 	block = JSON.parse(e.data).x
 	for (var i=0; i<block.txIndexes.length; ++i)
@@ -156,4 +156,4 @@ function removeBlock()
 	buildBlock(transactions)
 }
 
-blockchainApi.subscribeToBlocks(removeBlock())
+blockchainApi.subscribeToBlocks(removeSphere)
