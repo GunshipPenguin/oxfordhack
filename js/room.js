@@ -71,7 +71,17 @@ class Room extends THREE.Object3D {
     }
 
     processBlock(block) {
-        console.log(block);
+        var txIndexes = block.x.txIndexes;
+        this.children.forEach(child => {
+            if (!child.txInfo) {
+                return;
+            }
+            
+            if (txIndexes.includes(child.txInfo.x.tx_index)) {
+                this.remove(child);
+                console.log('Removing ' + child.txInfo.x.tx_index);
+            }
+        });
     }
 
     moveUnconfirmedTransactions(delta) {
