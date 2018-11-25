@@ -2,8 +2,8 @@ var THREE = require('three');
 var BoxLineGeometry = require('./box-line-geometry.js');
 var UnconfirmedTransactionMesh = require('./unconfirmed-transaction-mesh');
 
-BTC_SCALE = 0.12;
-SCALE_CAP = 6.0;
+BTC_SCALE = 0.40;
+SCALE_CAP = 15.0;
 
 function randRange(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -53,7 +53,7 @@ class Room extends THREE.LineSegments {
 
             child.position.add(child.userData.velocity);
             if (child.position.x < -this.roomSize || child.position.x > this.roomSize) {
-                child.position.x = THREE.Math.clamp(child.position.x, -3, 3);
+                child.position.x = THREE.Math.clamp(child.position.x, -this.roomSize, this.roomSize);
                 child.userData.velocity.x = -child.userData.velocity.x;
             }
 
@@ -63,7 +63,7 @@ class Room extends THREE.LineSegments {
             }
 
             if (child.position.z < -this.roomSize || child.position.z > this.roomSize) {
-                child.position.z = THREE.Math.clamp(child.position.z, -3, 3);
+                child.position.z = THREE.Math.clamp(child.position.z, -this.roomSize, this.roomSize);
                 child.userData.velocity.z = -child.userData.velocity.z;
             }
 
