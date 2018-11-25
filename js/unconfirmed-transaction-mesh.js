@@ -8,6 +8,7 @@ class UnconfirmedTransactionMesh extends THREE.Mesh {
         super(new THREE.BoxBufferGeometry(0.1, 0.1, 0.1),
             new THREE.MeshLambertMaterial({color: txColors[Math.floor(Math.random() * txColors.length)]}));
         this.txInfo = txInfo;
+        this.isUnconfirmedTransaction = true;
     }
 
     getEstimatedAmount() {

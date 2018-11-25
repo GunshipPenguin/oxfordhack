@@ -85,22 +85,18 @@ function init() {
 
     room.position.y = 3;
     scene.add(room);
-    transactions = [];
 
     blockchainApi.subscribeToTransactions(t => {
         blocks = room.children;
-        transactions.push(t.x.tx_index);
-
         room.addUnconfirmedTransaction(t);
     });
 
     blockchainApi.subscribeToBlocks(b => {
-        room.processBlock(b);
+        room.addBlockchainBlock(b);
     });
 
     scene.add(new THREE.HemisphereLight(0x606060, 0x404040));
 
-    room.addConfirmedTransaction();
     var light = new THREE.DirectionalLight(0xffffff);
     light.position.set(1, 1, 1).normalize();
     scene.add(light);
@@ -151,8 +147,8 @@ function render() {
     // Find intersecting block
     raycaster.setFromCamera({x: 0, y: 0}, camera);
 
-    var intersects = raycaster.intersectObjects(room.children);
-    intersects = intersects.filter(obj => !!obj.txInfo);
+    var txBlocks = room.children.filter(obj => obj.isUnconfirmedTransaction);
+    var intersects = raycaster.intersectObjects(txBlocks);
 
     if (intersects.length > 0) {
         var distance = intersects[0].object.position.distanceTo(camera.position);
@@ -193,44 +189,3 @@ function render() {
     room.moveUnconfirmedTransactions(delta);
     renderer.render(scene, camera);
 }
-
-function buildBlock(transactionIDs) {
-    for (var i = 1; i < transactionIDs.length; i++) {
-        findBox(transactionIDs[i])
-            .then(moveBox(transactionIDs[i]))
-            .catch(console.error)
-    }
-}
-
-function findBox(boxID) {
-    var blocks = room.children.filter(child => !child.isBlockchainBlock);
-
-    const promise = new Promise((resolve, reject) => {
-        blocks.forEach(box => {
-            if (box.userData.velocity !== 0 && box.txInfo.x.tx_index === boxID) {
-                resolve(blocks[i]);
-            }
-        });
-        reject('box not found')
-    });
-    return promise
-}
-
-function moveBox(box) {
-    room.remove(box) //change to having box move across room
-}
-
-function updateChain(e) {
-    console.log('new block!');
-    var block = e.x; //already parsed by JSON, try changing back to parse if error
-
-    for (var i = 0; i < block.txIndexes.length; ++i) {
-        if (transactions[i] in block.txIndexes) {
-            transactions.pop(transactions[i])
-        }
-    }
-    room.addConfirmedTransaction();
-    buildBlock(transactions)
-}
-
-blockchainApi.subscribeToBlocks(updateChain);

@@ -1,6 +1,6 @@
 var THREE = require('three');
 var UnconfirmedTransactionMesh = require('./unconfirmed-transaction-mesh');
-var ConfirmedTransaction = require('./blockchain-block')
+var BlockchainBlock = require('./blockchain-block')
 
 BTC_SCALE = 0.40;
 SCALE_CAP = 15.0;
@@ -18,10 +18,23 @@ class Room extends THREE.Object3D {
         super();
         this.roomSize = roomSize;
         this.chainZ = -roomSize;
+        this.initializeSkybox();
     }
 
-    addConfirmedTransaction() {
-        var newBlock = new ConfirmedTransaction(blockSize);
+    addBlockchainBlock(blockInfo) {
+        // Remove transactions in this block
+        var txIndexes = blockInfo.x.txIndexes;
+        this.children.forEach(child => {
+            if (!child.isUnconfirmedTransaction) {
+                return;
+            }
+
+            if (txIndexes.includes(child.txInfo.x.tx_index)) {
+                this.remove(child);
+            }
+        });
+
+        var newBlock = new BlockchainBlock(blockSize);
 
         newBlock.position.x = chainX;
         newBlock.position.y = chainY;
@@ -44,7 +57,6 @@ class Room extends THREE.Object3D {
 
         this.add(newBlock);
 
-        this.initializeSkybox();
     }
 
     addUnconfirmedTransaction(txInfo) {
@@ -104,24 +116,6 @@ class Room extends THREE.Object3D {
         var skyboxMaterial = new THREE.MeshFaceMaterial(skyboxMaterials);
         var skybox = new THREE.Mesh(geometry, skyboxMaterial);
         this.add(skybox);
-    }
-
-    processBlock(block) {
-        var txIndexes = block.x.txIndexes;
-        this.children.forEach(child => {
-
-            if (child.userData.velocity !== 0)
-                child.userData.velocity.multiplyScalar(1 - (0.0001 * delta));
-
-            if (!child.txInfo) {
-                return;
-            }
-
-            if (txIndexes.includes(child.txInfo.x.tx_index)) {
-                this.remove(child);
-                console.log('Removing ' + child.txInfo.x.tx_index);
-            }
-        });
     }
 
     moveUnconfirmedTransactions(delta) {
