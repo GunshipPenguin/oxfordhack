@@ -99,6 +99,10 @@ function init() {
         room.addUnconfirmedTransaction(t);
     });
 
+    blockchainApi.subscribeToBlocks(b => {
+        removeBlocks();
+    });
+
     scene.add(new THREE.HemisphereLight(0x606060, 0x404040));
 
     var light = new THREE.DirectionalLight(0xffffff);
@@ -155,12 +159,15 @@ function render() {
         if (intersectedBox !== intersects[0].object) {
             if (intersectedBox !== undefined) {
                 intersectedBox.material.emissive.setHex(intersectedBox.currentHex);
+                intersectedBox.isBeingLookedAt = false;
             }
 
             intersectedBox = intersects[0].object;
+            intersectedBox.isBeingLookedAt = true;
             if (hudTextMeshes.length !== 0) {
                 clearHud();
             }
+
             addHud('TX Hash: ' + intersectedBox.txInfo.x.hash.substr(0, 3) + '...', -0.1, -0.06, -0.25);
             addHud('Est. Amount (mBTC): ' + Number(intersectedBox.getEstimatedAmount()*10e-5).toFixed(3), -0.1, -0.035, -0.25);
             addHud('Est. Amount (GBP) ' + intersectedBox.getEstimatedAmountGBP().toFixed(2), -0.1, -0.01, -0.25);
@@ -177,7 +184,10 @@ function render() {
             clearHud();
         }
 
-        intersectedBox = undefined;
+        if (intersectedBox) {
+            intersectedBox.isBeingLookedAt = false;
+            intersectedBox = undefined;
+        }
     }
 
 

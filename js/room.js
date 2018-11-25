@@ -37,6 +37,10 @@ class Room extends THREE.LineSegments {
 
     moveUnconfirmedTransactions(delta) {
         this.children.forEach(child => {
+            if (child.isBeingLookedAt) {
+                return;
+            }
+
             child.userData.velocity.multiplyScalar(1 - (0.0001 * delta));
 
             child.position.add(child.userData.velocity);
