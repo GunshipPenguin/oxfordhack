@@ -35,6 +35,10 @@ class Room extends THREE.LineSegments {
         this.add(newTx);
     }
 
+    processBlock(block) {
+        console.log(block);
+    }
+
     moveUnconfirmedTransactions(delta) {
         this.children.forEach(child => {
             if (child.isBeingLookedAt) {

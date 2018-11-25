@@ -15,7 +15,7 @@ var blockchainApi = {
         };
 
         connection.onmessage = function (e) {
-            f(JSON.parse(e.message));
+            f(JSON.parse(e.data));
         };
     },
 

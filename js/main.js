@@ -58,18 +58,9 @@ function addHud(str, xpos, ypos, zpos) {
 }
 
 function init() {
-    // statsVR = new SVR();
     clock = new THREE.Clock();
     container = document.createElement('div');
     document.body.appendChild(container);
-
-    var info = document.createElement('div');
-    info.style.position = 'absolute';
-    info.style.top = '10px';
-    info.style.width = '100%';
-    info.style.textAlign = 'center';
-    info.innerHTML = '<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - interactive cubes';
-    container.appendChild(info);
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x505050);
@@ -100,7 +91,7 @@ function init() {
     });
 
     blockchainApi.subscribeToBlocks(b => {
-        removeBlocks();
+        room.processBlock(b);
     });
 
     scene.add(new THREE.HemisphereLight(0x606060, 0x404040));
