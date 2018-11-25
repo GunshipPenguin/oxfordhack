@@ -147,7 +147,8 @@ function render() {
     raycaster.setFromCamera({x: 0, y: 0}, camera);
     var intersects = raycaster.intersectObjects(room.transactionObjects);
     if (intersects.length > 0) {
-        if (intersectedBox !== intersects[0].object) {
+        var distance = intersects[0].object.position.distanceTo(camera.position);
+        if (intersectedBox !== intersects[0].object && distance >= 3) {
             if (intersectedBox !== undefined) {
                 intersectedBox.material.emissive.setHex(intersectedBox.currentHex);
                 intersectedBox.isBeingLookedAt = false;
