@@ -14,6 +14,35 @@ class Room extends THREE.Object3D {
         super();
         this.roomSize = roomSize;
         this.transactionObjects = [];
+        this.initializeSkybox();
+    }
+
+    initializeSkybox() {
+        var geometry = new THREE.CubeGeometry(this.roomSize * 2, this.roomSize * 2, this.roomSize * 2);
+        var skyboxMaterials = [
+            new THREE.MeshBasicMaterial({ 
+                map: new THREE.TextureLoader().load('img/matrix1.png'), 
+                side: THREE.DoubleSide }), //front side
+            new THREE.MeshBasicMaterial({ 
+                map: new THREE.TextureLoader().load('img/matrix2.png'), 
+                side: THREE.DoubleSide }), //back side
+            new THREE.MeshBasicMaterial({ 
+                map: new THREE.TextureLoader().load('img/black.png'), 
+                side: THREE.DoubleSide }), //up side
+            new THREE.MeshBasicMaterial({ 
+                map: new THREE.TextureLoader().load('img/black.png'), 
+                side: THREE.DoubleSide }), //down side
+            new THREE.MeshBasicMaterial({ 
+                map: new THREE.TextureLoader().load('img/matrix3.png'), 
+                side: THREE.DoubleSide }), //right side
+            new THREE.MeshBasicMaterial({ 
+                map: new THREE.TextureLoader().load('img/matrix4.png'), 
+                side: THREE.DoubleSide }), //left side
+        ];
+
+        var skyboxMaterial = new THREE.MeshFaceMaterial(skyboxMaterials);
+        var skybox = new THREE.Mesh(geometry, skyboxMaterial);
+        this.add(skybox);
     }
 
     addUnconfirmedTransaction(txInfo) {
