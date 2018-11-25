@@ -133,7 +133,7 @@ function findBox(boxID){
             }
         }
         reject('box not found')
-    }
+    })
     return promise
 }
 
