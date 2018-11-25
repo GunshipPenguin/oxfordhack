@@ -9,10 +9,40 @@ function randRange(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-class Room extends THREE.LineSegments {
+class Room extends THREE.Object3D {
     constructor(roomSize) {
-        super(new BoxLineGeometry(roomSize*2, roomSize*2, roomSize*2, 10, 10, 10), new THREE.LineBasicMaterial({color: 0x808080}));
+        super();
         this.roomSize = roomSize;
+        this.transactionObjects = [];
+        this.initializeSkybox();
+    }
+
+    initializeSkybox() {
+        var geometry = new THREE.CubeGeometry(this.roomSize * 2, this.roomSize * 2, this.roomSize * 2);
+        var skyboxMaterials = [
+            new THREE.MeshBasicMaterial({ 
+                map: new THREE.TextureLoader().load('img/matrix1.png'), 
+                side: THREE.DoubleSide }), //front side
+            new THREE.MeshBasicMaterial({ 
+                map: new THREE.TextureLoader().load('img/matrix2.png'), 
+                side: THREE.DoubleSide }), //back side
+            new THREE.MeshBasicMaterial({ 
+                map: new THREE.TextureLoader().load('img/black.png'), 
+                side: THREE.DoubleSide }), //up side
+            new THREE.MeshBasicMaterial({ 
+                map: new THREE.TextureLoader().load('img/black.png'), 
+                side: THREE.DoubleSide }), //down side
+            new THREE.MeshBasicMaterial({ 
+                map: new THREE.TextureLoader().load('img/matrix3.png'), 
+                side: THREE.DoubleSide }), //right side
+            new THREE.MeshBasicMaterial({ 
+                map: new THREE.TextureLoader().load('img/matrix4.png'), 
+                side: THREE.DoubleSide }), //left side
+        ];
+
+        var skyboxMaterial = new THREE.MeshFaceMaterial(skyboxMaterials);
+        var skybox = new THREE.Mesh(geometry, skyboxMaterial);
+        this.add(skybox);
     }
 
     addUnconfirmedTransaction(txInfo) {
@@ -35,7 +65,8 @@ class Room extends THREE.LineSegments {
         newTx.userData.velocity.x = Math.random() * 0.02 - 0.005;
         newTx.userData.velocity.y = Math.random() * 0.02 - 0.005;
         newTx.userData.velocity.z = Math.random() * 0.02 - 0.005;
-
+        
+        this.transactionObjects.push(newTx);
         this.add(newTx);
     }
 
@@ -44,32 +75,32 @@ class Room extends THREE.LineSegments {
     }
 
     moveUnconfirmedTransactions(delta) {
-        this.children.forEach(child => {
-            if (child.isBeingLookedAt) {
+        this.transactionObjects.forEach(tx => {
+            if (tx.isBeingLookedAt) {
                 return;
             }
 
-            child.userData.velocity.multiplyScalar(1 - (0.0001 * delta));
+            tx.userData.velocity.multiplyScalar(1 - (0.0001 * delta));
 
-            child.position.add(child.userData.velocity);
-            if (child.position.x < -this.roomSize || child.position.x > this.roomSize) {
-                child.position.x = THREE.Math.clamp(child.position.x, -this.roomSize, this.roomSize);
-                child.userData.velocity.x = -child.userData.velocity.x;
+            tx.position.add(tx.userData.velocity);
+            if (tx.position.x < -this.roomSize || tx.position.x > this.roomSize) {
+                tx.position.x = THREE.Math.clamp(tx.position.x, -this.roomSize, this.roomSize);
+                tx.userData.velocity.x = -tx.userData.velocity.x;
             }
 
-            if (child.position.y < -this.roomSize || child.position.y > this.roomSize) {
-                child.position.y = THREE.Math.clamp(child.position.y, -this.roomSize, this.roomSize);
-                child.userData.velocity.y = -child.userData.velocity.y;
+            if (tx.position.y < -this.roomSize || tx.position.y > this.roomSize) {
+                tx.position.y = THREE.Math.clamp(tx.position.y, -this.roomSize, this.roomSize);
+                tx.userData.velocity.y = -tx.userData.velocity.y;
             }
 
-            if (child.position.z < -this.roomSize || child.position.z > this.roomSize) {
-                child.position.z = THREE.Math.clamp(child.position.z, -this.roomSize, this.roomSize);
-                child.userData.velocity.z = -child.userData.velocity.z;
+            if (tx.position.z < -this.roomSize || tx.position.z > this.roomSize) {
+                tx.position.z = THREE.Math.clamp(tx.position.z, -this.roomSize, this.roomSize);
+                tx.userData.velocity.z = -tx.userData.velocity.z;
             }
 
-            child.rotation.x += child.userData.velocity.x * 2 * delta;
-            child.rotation.y += child.userData.velocity.y * 2 * delta;
-            child.rotation.z += child.userData.velocity.z * 2 * delta;
+            tx.rotation.x += tx.userData.velocity.x * 2 * delta;
+            tx.rotation.y += tx.userData.velocity.y * 2 * delta;
+            tx.rotation.z += tx.userData.velocity.z * 2 * delta;
         });
     }
 }

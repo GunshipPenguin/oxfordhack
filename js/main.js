@@ -145,7 +145,7 @@ function render() {
 
     // Find intersecting block
     raycaster.setFromCamera({x: 0, y: 0}, camera);
-    var intersects = raycaster.intersectObjects(room.children);
+    var intersects = raycaster.intersectObjects(room.transactionObjects);
     if (intersects.length > 0) {
         if (intersectedBox !== intersects[0].object) {
             if (intersectedBox !== undefined) {
