@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "browserify": "^16.2.3",
-    "keypress": "^0.2.1",
+    "moment": "^2.22.2",
     "three": "^0.98.0",
     "uglify": "^0.1.5"
   }

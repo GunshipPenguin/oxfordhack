@@ -1,34 +1,73 @@
+var THREE = require('three');
 var WEBVR = require('./web-vr');
 var Room = require('./room');
 var blockchainApi = require('./blockchain-api');
+var moment = require('moment');
 
 var container;
 var camera, scene, renderer;
 var clock;
+var raycaster;
 
 var room;
 var crosshair;
 
-init();
-animate();
+var intersectedBox;
+
+var metaDataFont;
+var hudTextMeshes = [];
+
+// Load text
+var loader = new THREE.FontLoader();
+loader.load('helvetiker_regular.typeface.js', function (font) {
+    metaDataFont = font;
+    init();
+    animate();
+});
+
+function clearHud() {
+    hudTextMeshes.forEach(mesh => {
+        if (mesh) {
+            camera.remove(mesh);
+        }
+    });
+    hudTextMeshes = []
+}
+
+function addHud(str, xpos, ypos, zpos) {
+    var textGeometry = new THREE.TextGeometry(str, {
+        font: metaDataFont,
+
+        size: 0.01,
+        height: 0.0001,
+        curveSegments: 1,
+        bevelEnabled: false
+    });
+
+    var textMaterial = new THREE.MeshBasicMaterial(
+        {color: 0xffffff}
+    );
+
+    var textMesh = new THREE.Mesh(textGeometry, textMaterial);
+    textMesh.position.x = xpos;
+    textMesh.position.y = ypos;
+    textMesh.position.z = zpos;
+    camera.add(textMesh);
+
+    hudTextMeshes.push(textMesh);
+}
 
 function init() {
     clock = new THREE.Clock();
     container = document.createElement('div');
     document.body.appendChild(container);
 
-    var info = document.createElement('div');
-    info.style.position = 'absolute';
-    info.style.top = '10px';
-    info.style.width = '100%';
-    info.style.textAlign = 'center';
-    info.innerHTML = '<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - interactive cubes';
-    container.appendChild(info);
-
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x505050);
 
-    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 10);
+    raycaster = new THREE.Raycaster();
+
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 20);
     scene.add(camera);
 
     crosshair = new THREE.Mesh(
@@ -42,16 +81,21 @@ function init() {
     crosshair.position.z = -2;
     camera.add(crosshair);
 
-    room = new Room(4);
+    room = new Room(10);
 
     room.position.y = 3;
     scene.add(room);
-    transactions = []
+    transactions = [];
 
     blockchainApi.subscribeToTransactions(t => {
-        blocks = room.children
-        transactions.push(t.x.tx_index)
+        blocks = room.children;
+        transactions.push(t.x.tx_index);
+
         room.addUnconfirmedTransaction(t);
+    });
+
+    blockchainApi.subscribeToBlocks(b => {
+        room.processBlock(b);
     });
 
     scene.add(new THREE.HemisphereLight(0x606060, 0x404040));
@@ -104,58 +148,89 @@ function animate() {
 function render() {
     var delta = clock.getDelta() * 60;
 
+    // Find intersecting block
+    raycaster.setFromCamera({x: 0, y: 0}, camera);
+
+    var intersects = raycaster.intersectObjects(room.children);
+    intersects = intersects.filter(obj => !!obj.txInfo);
+
+    if (intersects.length > 0) {
+        var distance = intersects[0].object.position.distanceTo(camera.position);
+        if (intersectedBox !== intersects[0].object && distance >= 3) {
+            if (intersectedBox !== undefined) {
+                intersectedBox.material.emissive.setHex(intersectedBox.currentHex);
+                intersectedBox.isBeingLookedAt = false;
+            }
+
+            intersectedBox = intersects[0].object;
+            intersectedBox.isBeingLookedAt = true;
+            if (hudTextMeshes.length !== 0) {
+                clearHud();
+            }
+
+            addHud('TX Hash: ' + intersectedBox.txInfo.x.hash.substr(0, 12) + '...', -0.1, -0.06, -0.25);
+            addHud('Est. Amount (mBTC): ' + Number(intersectedBox.getEstimatedAmount() * 10e-5).toFixed(3), -0.1, -0.035, -0.25);
+            addHud('Est. Amount (GBP) ' + intersectedBox.getEstimatedAmountGBP().toFixed(2), -0.1, -0.01, -0.25);
+            addHud('Broadcast: ' + moment(intersectedBox.txInfo.x.time * 1000).fromNow(), -0.1, 0.015, -0.25);
+            intersectedBox.currentHex = intersectedBox.material.emissive.getHex();
+            intersectedBox.material.emissive.setHex(0xff0000);
+        }
+    } else {
+        if (intersectedBox) {
+            intersectedBox.material.emissive.setHex(intersectedBox.currentHex);
+        }
+
+        if (hudTextMeshes.length !== 0) {
+            clearHud();
+        }
+
+        if (intersectedBox) {
+            intersectedBox.isBeingLookedAt = false;
+            intersectedBox = undefined;
+        }
+    }
 
     room.moveUnconfirmedTransactions(delta);
     renderer.render(scene, camera);
 }
 
-
-function buildBlock(transactionIDs)
-{
-    for (var i = 1; i < transactionIDs.length; i++)
-    {
+function buildBlock(transactionIDs) {
+    for (var i = 1; i < transactionIDs.length; i++) {
         findBox(transactionIDs[i])
-         .then(moveBox(transactionIDs[i]))
-         .catch(console.error)
+            .then(moveBox(transactionIDs[i]))
+            .catch(console.error)
     }
 }
 
-function findBox(boxID){
-    var boxes = room.children
+function findBox(boxID) {
+    var blocks = room.children.filter(child => !child.isBlockchainBlock);
 
-    const promise = new Promise ((resolve, reject) => {
-        for (var i = 1; i < boxes.length; ++i)
-        {
-            if (boxes[i].userData.velocity != 0 && boxes[i].txInfo.x.tx_index == boxID)
-            {
-                resolve(boxes[i])
+    const promise = new Promise((resolve, reject) => {
+        blocks.forEach(box => {
+            if (box.userData.velocity !== 0 && box.txInfo.x.tx_index === boxID) {
+                resolve(blocks[i]);
             }
-        }
+        });
         reject('box not found')
     });
     return promise
 }
 
-function moveBox(box)
-{
-	room.remove(box) //change to having box move across room
+function moveBox(box) {
+    room.remove(box) //change to having box move across room
 }
 
-function updateChain(e)
-{
-  console.log('new block!')
-	var block = e.x //already parsed by JSON, try changing back to parse if error
+function updateChain(e) {
+    console.log('new block!');
+    var block = e.x; //already parsed by JSON, try changing back to parse if error
 
-	for (var i=0; i<block.txIndexes.length; ++i)
-	{
-		if (transactions[i] in block.txIndexes)
-		{
-			transactions.pop(transactions[i])
-		}
-	}
-  room.addConfirmedTransaction();
-	buildBlock(transactions)
+    for (var i = 0; i < block.txIndexes.length; ++i) {
+        if (transactions[i] in block.txIndexes) {
+            transactions.pop(transactions[i])
+        }
+    }
+    room.addConfirmedTransaction();
+    buildBlock(transactions)
 }
 
-
-blockchainApi.subscribeToBlocks(updateChain)
+blockchainApi.subscribeToBlocks(updateChain);
