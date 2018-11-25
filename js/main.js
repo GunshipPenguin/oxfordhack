@@ -159,7 +159,7 @@ function render() {
                 clearHud();
             }
 
-            addHud('TX Hash: ' + intersectedBox.txInfo.x.hash.substr(0, 3) + '...', -0.1, -0.06, -0.25);
+            addHud('TX Hash: ' + intersectedBox.txInfo.x.hash.substr(0, 12) + '...', -0.1, -0.06, -0.25);
             addHud('Est. Amount (mBTC): ' + Number(intersectedBox.getEstimatedAmount()*10e-5).toFixed(3), -0.1, -0.035, -0.25);
             addHud('Est. Amount (GBP) ' + intersectedBox.getEstimatedAmountGBP().toFixed(2), -0.1, -0.01, -0.25);
             addHud('Broadcast: ' + moment(intersectedBox.txInfo.x.time*1000).fromNow(), -0.1, 0.015, -0.25);

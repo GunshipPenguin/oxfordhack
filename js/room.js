@@ -2,8 +2,12 @@ var THREE = require('three');
 var BoxLineGeometry = require('./box-line-geometry.js');
 var UnconfirmedTransactionMesh = require('./unconfirmed-transaction-mesh');
 
-BTC_SCALE = 0.07;
-SCALE_CAP = 5.5;
+BTC_SCALE = 0.12;
+SCALE_CAP = 6.0;
+
+function randRange(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 class Room extends THREE.LineSegments {
     constructor(roomSize) {
@@ -14,9 +18,9 @@ class Room extends THREE.LineSegments {
     addUnconfirmedTransaction(txInfo) {
         var newTx = new UnconfirmedTransactionMesh(txInfo);
 
-        newTx.position.x = Math.random() * 4 - 2;
-        newTx.position.y = Math.random() * 4 - 2;
-        newTx.position.z = Math.random() * 4 - 2;
+        newTx.position.x = randRange(-this.roomSize, this.roomSize);
+        newTx.position.y = randRange(-this.roomSize, this.roomSize);
+        newTx.position.z = randRange(-this.roomSize, this.roomSize);
 
         newTx.rotation.x = Math.random() * 2 * Math.PI;
         newTx.rotation.y = Math.random() * 2 * Math.PI;
