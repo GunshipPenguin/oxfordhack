@@ -9,9 +9,9 @@ function randRange(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-class Room extends THREE.LineSegments {
+class Room extends THREE.Object3D {
     constructor(roomSize) {
-        super(new BoxLineGeometry(roomSize*2, roomSize*2, roomSize*2, 10, 10, 10), new THREE.LineBasicMaterial({color: 0x808080}));
+        super();
         this.roomSize = roomSize;
     }
 
