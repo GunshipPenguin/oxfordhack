@@ -8,10 +8,6 @@ class UnconfirmedTransactionMesh extends THREE.Mesh {
             new THREE.MeshLambertMaterial({color: Math.random() * 0xffffff}));
 
         this.txInfo = txInfo;
-
-        this.velocityX = Math.random() * 0.01 - 0.05;
-        this.velocityY = Math.random() * 0.01 - 0.05;
-        this.velocityZ = Math.random() * 0.01 - 0.05;
     }
 
     getEstimatedAmount() {

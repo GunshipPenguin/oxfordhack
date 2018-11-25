@@ -67,7 +67,7 @@ function init() {
 
     raycaster = new THREE.Raycaster();
 
-    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 10);
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 20);
     scene.add(camera);
 
     crosshair = new THREE.Mesh(
@@ -81,7 +81,7 @@ function init() {
     crosshair.position.z = -2;
     camera.add(crosshair);
 
-    room = new Room(4);
+    room = new Room(10);
 
     room.position.y = 3;
     scene.add(room);
