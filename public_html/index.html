@@ -25,22 +25,10 @@
 	</head>
 	<body>
 		<script src='https://cdn.jsdelivr.net/npm/webvr-polyfill@latest/build/webvr-polyfill.js'></script>
+		<script src ='../js/three.js'></script>
 		<script>
-            var polyfill = new WebVRPolyfill();
-            navigator.getVRDisplays().then(displays => {
-                // If we have a native VRDisplay, or if the polyfill
-                // provided us with a CardboardVRDisplay, use it
-                if (displays.length) {
-                    vrDisplay = displays[0];
-                    controls = new THREE.VRControls(camera);
-                    vrDisplay.requestAnimationFrame(animate);
-                } else {
-                    // If we don't have a VRDisplay, we're probably on
-                    // a desktop environment, so set up desktop-oriented controls
-                    controls = new THREE.OrbitControls(camera);
-                    requestAnimationFrame(animate);
-                }
-            });
+			var polyfill = new WebVRPolyfill();
+			navigator.getVRDisplays();
 		</script>
 		<script src="bundle.js"></script>
 	</body>

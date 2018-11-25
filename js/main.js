@@ -1,4 +1,3 @@
-var THREE = require('three');
 var WEBVR = require('./web-vr');
 var Room = require('./room');
 var blockchainApi = require('./blockchain-api');
@@ -47,16 +46,17 @@ function init() {
 
     room.position.y = 3;
     scene.add(room);
-
     transactions = []
 
     blockchainApi.subscribeToTransactions(t => {
-        transactions.push(JSON.parse(t.data).x.tx_index)
+        blocks = room.children
+        transactions.push(t.x.tx_index)
         room.addUnconfirmedTransaction(t);
     });
 
     scene.add(new THREE.HemisphereLight(0x606060, 0x404040));
 
+    room.addConfirmedTransaction();
     var light = new THREE.DirectionalLight(0xffffff);
     light.position.set(1, 1, 1).normalize();
     scene.add(light);
@@ -104,6 +104,7 @@ function animate() {
 function render() {
     var delta = clock.getDelta() * 60;
 
+
     room.moveUnconfirmedTransactions(delta);
     renderer.render(scene, camera);
 }
@@ -111,41 +112,40 @@ function render() {
 
 function buildBlock(transactionIDs)
 {
-    for (var i = 0; i < transactionIDs.length; i++)
+    for (var i = 1; i < transactionIDs.length; i++)
     {
         findBox(transactionIDs[i])
-         .then(moveBox(box))
+         .then(moveBox(transactionIDs[i]))
          .catch(console.error)
     }
-
-    room.addConfirmedTransaction();
 }
 
 function findBox(boxID){
     var boxes = room.children
 
     const promise = new Promise ((resolve, reject) => {
-        for (var i = 0; i < boxes.length; ++i)
+        for (var i = 1; i < boxes.length; ++i)
         {
-            if (boxes[i].txInfo.x.tx_index == boxID)
+            if (boxes[i].userData.velocity != 0 && boxes[i].txInfo.x.tx_index == boxID)
             {
                 resolve(boxes[i])
             }
         }
         reject('box not found')
-    }
+    });
     return promise
 }
 
 function moveBox(box)
 {
 	room.remove(box) //change to having box move across room
-
 }
 
-function removeSphere(e)
+function updateChain(e)
 {
-	block = JSON.parse(e.data).x
+  console.log('new block!')
+	var block = e.x //already parsed by JSON, try changing back to parse if error
+
 	for (var i=0; i<block.txIndexes.length; ++i)
 	{
 		if (transactions[i] in block.txIndexes)
@@ -153,7 +153,9 @@ function removeSphere(e)
 			transactions.pop(transactions[i])
 		}
 	}
+  room.addConfirmedTransaction();
 	buildBlock(transactions)
 }
 
-blockchainApi.subscribeToBlocks(removeSphere)
+
+blockchainApi.subscribeToBlocks(updateChain)

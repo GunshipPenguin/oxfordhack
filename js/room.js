@@ -1,13 +1,14 @@
 var THREE = require('three');
 var BoxLineGeometry = require('./box-line-geometry.js');
 var UnconfirmedTransactionMesh = require('./unconfirmed-transaction-mesh');
+var ConfirmedTransaction = require('./confirmedTransaction')
 
 BTC_SCALE = 0.024;
 SCALE_CAP = 2.0;
 
-const chainX = 0
-const chainY = 0
-const blockSize = 50
+const chainX = 0.04
+const chainY = 0.05
+const blockSize = 1
 
 class Room extends THREE.LineSegments {
     constructor(roomSize) {
@@ -22,9 +23,24 @@ class Room extends THREE.LineSegments {
 
       newBlock.position.x = chainX
       newBlock.position.y = chainY
-      newBlock.position.z = chainZ
+      newBlock.position.z = this.chainZ
 
-      chainZ += blockSize
+      newBlock.userData.velocity = new THREE.Vector3();
+      newBlock.userData.velocity.x = 0
+      newBlock.userData.velocity.y = 0
+      newBlock.userData.velocity.z = 0
+
+      newBlock.rotation.x = 0
+      newBlock.rotation.y = 0
+      newBlock.rotation.z = 0
+
+      newBlock.scale.x = 0.5 // Math.max((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
+      newBlock.scale.y = 0.5 // Math.max((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
+      newBlock.scale.z = 0.5 //Math.max((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
+
+      this.chainZ += blockSize + 0.03
+
+      this.add(newBlock)
     }
 
     addUnconfirmedTransaction(txInfo) {
@@ -42,7 +58,6 @@ class Room extends THREE.LineSegments {
         newTx.scale.x = 0.5 // Math.max((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
         newTx.scale.y = 0.5 // Math.max((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
         newTx.scale.z = 0.5 //Math.max((Math.random() + 0.5) * (estAmount / BTC_SCALE), SCALE_CAP);
-        console.log(newTx.scale);
 
         newTx.userData.velocity = new THREE.Vector3();
         newTx.userData.velocity.x = Math.random() * 0.01 - 0.005;
@@ -54,7 +69,9 @@ class Room extends THREE.LineSegments {
 
     moveUnconfirmedTransactions(delta) {
         this.children.forEach(child => {
-            child.userData.velocity.multiplyScalar(1 - (0.0001 * delta));
+
+            if (child.userData.velocity != 0)
+              child.userData.velocity.multiplyScalar(1 - (0.0001 * delta));
 
             child.position.add(child.userData.velocity);
             if (child.position.x < -this.roomSize || child.position.x > this.roomSize) {
