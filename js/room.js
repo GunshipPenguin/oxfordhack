@@ -5,9 +5,9 @@ var BlockchainBlock = require('./blockchain-block')
 BTC_SCALE = 0.40;
 SCALE_CAP = 15.0;
 
-const chainX = 0.04;
-const chainY = 0.05;
-const blockSize = 1;
+const chainX = 0.00;
+const chainY = -1.5;
+const blockSize = 2;
 
 function randRange(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -34,7 +34,7 @@ class Room extends THREE.Object3D {
             }
         });
 
-        var newBlock = new BlockchainBlock(blockSize);
+        var newBlock = new BlockchainBlock(blockSize, blockInfo);
 
         newBlock.position.x = chainX;
         newBlock.position.y = chainY;
@@ -149,6 +149,18 @@ class Room extends THREE.Object3D {
             child.rotation.x += child.userData.velocity.x * 2 * delta;
             child.rotation.y += child.userData.velocity.y * 2 * delta;
             child.rotation.z += child.userData.velocity.z * 2 * delta;
+        });
+    }
+
+    moveBlockchainBlocks(delta) {
+        this.children.forEach(child => {
+            if (!child.isBlockchainBlock) {
+                return;
+            }
+
+            child.rotation.x += 0.02 * delta;
+            child.rotation.y += 0.02 * delta;
+            child.rotation.z += 0.02 * delta;
         });
     }
 }

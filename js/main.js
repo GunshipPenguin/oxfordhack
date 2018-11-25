@@ -12,7 +12,7 @@ var raycaster;
 var room;
 var crosshair;
 
-var intersectedBox;
+var intersectingItem;
 
 var metaDataFont;
 var hudTextMeshes = [];
@@ -95,6 +95,24 @@ function init() {
         room.addBlockchainBlock(b);
     });
 
+    var mockBlockchainBlock = {
+        x: {
+            txIndexes: [
+                392277924,
+                392276319,
+                392277471,
+                392275989,
+                392277297,
+                392277307,
+                392277423
+            ],
+            nTx: 1796,
+            height: 551399,
+            time: 1543108624
+        }
+    };
+    room.addBlockchainBlock(mockBlockchainBlock);
+
     scene.add(new THREE.HemisphereLight(0x606060, 0x404040));
 
     var light = new THREE.DirectionalLight(0xffffff);
@@ -147,45 +165,53 @@ function render() {
     // Find intersecting block
     raycaster.setFromCamera({x: 0, y: 0}, camera);
 
-    var txBlocks = room.children.filter(obj => obj.isUnconfirmedTransaction);
+    var txBlocks = room.children.filter(obj => obj.isUnconfirmedTransaction || obj.isBlockchainBlock);
     var intersects = raycaster.intersectObjects(txBlocks);
 
     if (intersects.length > 0) {
         var distance = intersects[0].object.position.distanceTo(camera.position);
-        if (intersectedBox !== intersects[0].object && distance >= 3) {
-            if (intersectedBox !== undefined) {
-                intersectedBox.material.emissive.setHex(intersectedBox.currentHex);
-                intersectedBox.isBeingLookedAt = false;
+        if (intersectingItem !== intersects[0].object && distance >= 3) {
+            if (intersectingItem !== undefined) {
+                intersectingItem.material.emissive.setHex(intersectingItem.currentHex);
+                intersectingItem.isBeingLookedAt = false;
             }
 
-            intersectedBox = intersects[0].object;
-            intersectedBox.isBeingLookedAt = true;
+            intersectingItem = intersects[0].object;
+            intersectingItem.isBeingLookedAt = true;
             if (hudTextMeshes.length !== 0) {
                 clearHud();
             }
 
-            addHud('TX Hash: ' + intersectedBox.txInfo.x.hash.substr(0, 12) + '...', -0.1, -0.06, -0.25);
-            addHud('Est. Amount (mBTC): ' + Number(intersectedBox.getEstimatedAmount() * 10e-5).toFixed(3), -0.1, -0.035, -0.25);
-            addHud('Est. Amount (GBP) ' + intersectedBox.getEstimatedAmountGBP().toFixed(2), -0.1, -0.01, -0.25);
-            addHud('Broadcast: ' + moment(intersectedBox.txInfo.x.time * 1000).fromNow(), -0.1, 0.015, -0.25);
-            intersectedBox.currentHex = intersectedBox.material.emissive.getHex();
-            intersectedBox.material.emissive.setHex(0xff0000);
+            if (intersectingItem.isUnconfirmedTransaction) {
+                addHud('TX Hash: ' + intersectingItem.txInfo.x.hash.substr(0, 12) + '...', -0.1, -0.06, -0.25);
+                addHud('Est. Amount (mBTC): ' + Number(intersectingItem.getEstimatedAmount() * 10e-5).toFixed(3), -0.1, -0.035, -0.25);
+                addHud('Est. Amount (GBP) ' + intersectingItem.getEstimatedAmountGBP().toFixed(2), -0.1, -0.01, -0.25);
+                addHud('Broadcast: ' + moment(intersectingItem.txInfo.x.time * 1000).fromNow(), -0.1, 0.015, -0.25);
+            } else {
+                addHud('nTx: ' + intersectingItem.blockInfo.x.nTx, -0.1, -0.06, -0.25);
+                addHud('Height: ' + intersectingItem.blockInfo.x.height, -0.1, -0.035, -0.25);
+                addHud('Confirmed: ' + moment(intersectingItem.blockInfo.x.time * 1000).fromNow(), -0.1, -0.01, -0.25);
+            }
+
+            intersectingItem.currentHex = intersectingItem.material.emissive.getHex();
+            intersectingItem.material.emissive.setHex(0xff0000);
         }
     } else {
-        if (intersectedBox) {
-            intersectedBox.material.emissive.setHex(intersectedBox.currentHex);
+        if (intersectingItem) {
+            intersectingItem.material.emissive.setHex(intersectingItem.currentHex);
         }
 
         if (hudTextMeshes.length !== 0) {
             clearHud();
         }
 
-        if (intersectedBox) {
-            intersectedBox.isBeingLookedAt = false;
-            intersectedBox = undefined;
+        if (intersectingItem) {
+            intersectingItem.isBeingLookedAt = false;
+            intersectingItem = undefined;
         }
     }
 
     room.moveUnconfirmedTransactions(delta);
+    room.moveBlockchainBlocks(delta);
     renderer.render(scene, camera);
 }
